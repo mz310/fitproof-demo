@@ -10,10 +10,10 @@ from config import config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.login_view = 'main.login'
+login_manager.login_view = "main.login"
 
 
-def create_app(config_name='default'):
+def create_app(config_name="default"):
     """Application Factory Pattern"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
@@ -24,6 +24,7 @@ def create_app(config_name='default'):
 
     # Blueprints бүртгүүлэх
     from app.routes import main_bp
+
     app.register_blueprint(main_bp)
 
     # Database үүсгэх
@@ -31,4 +32,3 @@ def create_app(config_name='default'):
         db.create_all()
 
     return app
-

@@ -1,0 +1,82 @@
+# =============================================================================
+# FitProof - Python Project Configuration
+# Лаборатори 6: Code Review ба Coding Convention
+# =============================================================================
+
+[tool.black]
+# Black - Код форматлагч тохиргоо
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+# isort - Import эрэмбэлэгч тохиргоо
+profile = "black"
+line_length = 100
+known_first_party = ["app"]
+known_third_party = ["flask", "flask_login", "flask_sqlalchemy", "werkzeug"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip = ["venv", ".venv", "__pycache__"]
+
+[tool.pylint.master]
+ignore = ["venv", "__pycache__", "migrations"]
+jobs = 1
+persistent = true
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "R0903",  # too-few-public-methods
+    "W0611",  # unused-import (handled by flake8)
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "_", "db", "id", "xp", "bp", "f"]
+
+[tool.pylint.design]
+max-args = 7
+max-locals = 15
+max-returns = 6
+max-branches = 12
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[project]
+name = "fitproof"
+version = "1.0.0"
+description = "FitProof - Фитнес дасгалын бүртгэлийн систем"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "М.Зоригт", email = "B222270035@must.edu.mn"}
+]
+

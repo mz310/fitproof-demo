@@ -21,27 +21,23 @@ class TestQRSession(unittest.TestCase):
 
     def setUp(self):
         """Туршилт эхлэхийн өмнө тохиргоо"""
-        self.app = create_app('testing')
+        self.app = create_app("testing")
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
 
         # Туршилтын хэрэглэгч үүсгэх
-        self.user = User(
-            username='testuser',
-            email='test@fitproof.mn',
-            role='member'
-        )
-        self.user.set_password('password123')
+        self.user = User(username="testuser", email="test@fitproof.mn", role="member")
+        self.user.set_password("password123")
         db.session.add(self.user)
 
         # Туршилтын төхөөрөмж үүсгэх
         self.equipment = Equipment(
-            name='Treadmill 1',
-            qr_code='EQ001-TREADMILL',
-            equipment_type='cardio',
-            description='Гүйлтийн зам 1'
+            name="Treadmill 1",
+            qr_code="EQ001-TREADMILL",
+            equipment_type="cardio",
+            description="Гүйлтийн зам 1",
         )
         db.session.add(self.equipment)
         db.session.commit()
@@ -56,31 +52,28 @@ class TestQRSession(unittest.TestCase):
 
     def test_user_creation(self):
         """Хэрэглэгч үүсгэх туршилт"""
-        user = User.query.filter_by(username='testuser').first()
+        user = User.query.filter_by(username="testuser").first()
         self.assertIsNotNone(user)
-        self.assertEqual(user.email, 'test@fitproof.mn')
-        self.assertEqual(user.role, 'member')
+        self.assertEqual(user.email, "test@fitproof.mn")
+        self.assertEqual(user.role, "member")
         self.assertEqual(user.xp_points, 0)
 
     def test_user_password(self):
         """Нууц үг шалгах туршилт"""
-        user = User.query.filter_by(username='testuser').first()
-        self.assertTrue(user.check_password('password123'))
-        self.assertFalse(user.check_password('wrongpassword'))
+        user = User.query.filter_by(username="testuser").first()
+        self.assertTrue(user.check_password("password123"))
+        self.assertFalse(user.check_password("wrongpassword"))
 
     def test_equipment_creation(self):
         """Төхөөрөмж үүсгэх туршилт"""
-        eq = Equipment.query.filter_by(qr_code='EQ001-TREADMILL').first()
+        eq = Equipment.query.filter_by(qr_code="EQ001-TREADMILL").first()
         self.assertIsNotNone(eq)
-        self.assertEqual(eq.name, 'Treadmill 1')
-        self.assertEqual(eq.equipment_type, 'cardio')
+        self.assertEqual(eq.name, "Treadmill 1")
+        self.assertEqual(eq.equipment_type, "cardio")
 
     def test_workout_session_start(self):
         """Дасгалын сесс эхлүүлэх туршилт"""
-        session = WorkoutSession(
-            user_id=self.user.id,
-            equipment_id=self.equipment.id
-        )
+        session = WorkoutSession(user_id=self.user.id, equipment_id=self.equipment.id)
         db.session.add(session)
         db.session.commit()
 
@@ -91,15 +84,12 @@ class TestQRSession(unittest.TestCase):
 
     def test_workout_session_end(self):
         """Дасгалын сесс дуусгах туршилт"""
-        session = WorkoutSession(
-            user_id=self.user.id,
-            equipment_id=self.equipment.id
-        )
+        session = WorkoutSession(user_id=self.user.id, equipment_id=self.equipment.id)
         db.session.add(session)
         db.session.commit()
 
         # Сесс дуусгах
-        session.end_session(weight=50, sets=3, reps=12, notes='Сайн дасгал боллоо')
+        session.end_session(weight=50, sets=3, reps=12, notes="Сайн дасгал боллоо")
         db.session.commit()
 
         self.assertFalse(session.is_active)
@@ -110,10 +100,7 @@ class TestQRSession(unittest.TestCase):
 
     def test_xp_calculation(self):
         """XP оноо тооцоолох туршилт"""
-        session = WorkoutSession(
-            user_id=self.user.id,
-            equipment_id=self.equipment.id
-        )
+        session = WorkoutSession(user_id=self.user.id, equipment_id=self.equipment.id)
         db.session.add(session)
         db.session.commit()
 
@@ -128,58 +115,49 @@ class TestQRSession(unittest.TestCase):
 
     def test_scan_qr_page_loads(self):
         """QR уншуулах хуудас ачаалагдах туршилт"""
-        response = self.client.get('/scan')
+        response = self.client.get("/scan")
         self.assertEqual(response.status_code, 200)
 
     def test_equipment_list(self):
         """Төхөөрөмжийн жагсаалт харуулах туршилт"""
-        response = self.client.get('/equipment')
+        response = self.client.get("/equipment")
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Treadmill 1', response.get_data(as_text=True))
+        self.assertIn("Treadmill 1", response.get_data(as_text=True))
 
     def test_start_session_via_qr(self):
         """QR кодоор сесс эхлүүлэх API туршилт"""
         # Нэвтрэх
         with self.client.session_transaction() as sess:
-            sess['_user_id'] = str(self.user.id)
+            sess["_user_id"] = str(self.user.id)
 
-        response = self.client.post('/api/session/start', json={
-            'qr_code': 'EQ001-TREADMILL'
-        })
+        response = self.client.post("/api/session/start", json={"qr_code": "EQ001-TREADMILL"})
 
         self.assertIn(response.status_code, [200, 302])
 
     def test_invalid_qr_code(self):
         """Буруу QR код туршилт"""
         with self.client.session_transaction() as sess:
-            sess['_user_id'] = str(self.user.id)
+            sess["_user_id"] = str(self.user.id)
 
-        response = self.client.post('/api/session/start', json={
-            'qr_code': 'INVALID-CODE'
-        })
+        response = self.client.post("/api/session/start", json={"qr_code": "INVALID-CODE"})
 
         data = response.get_json()
         if data:
-            self.assertIn('error', data)
+            self.assertIn("error", data)
 
     def test_end_session_api(self):
         """Сесс дуусгах API туршилт"""
         # Сесс үүсгэх
-        session = WorkoutSession(
-            user_id=self.user.id,
-            equipment_id=self.equipment.id
-        )
+        session = WorkoutSession(user_id=self.user.id, equipment_id=self.equipment.id)
         db.session.add(session)
         db.session.commit()
 
         with self.client.session_transaction() as sess:
-            sess['_user_id'] = str(self.user.id)
+            sess["_user_id"] = str(self.user.id)
 
-        response = self.client.post(f'/api/session/{session.id}/end', json={
-            'weight': 60,
-            'sets': 4,
-            'reps': 10
-        })
+        response = self.client.post(
+            f"/api/session/{session.id}/end", json={"weight": 60, "sets": 4, "reps": 10}
+        )
 
         self.assertIn(response.status_code, [200, 302])
 
@@ -187,19 +165,15 @@ class TestQRSession(unittest.TestCase):
 
     def test_member_role(self):
         """Member эрхийн туршилт"""
-        user = User.query.filter_by(username='testuser').first()
-        self.assertEqual(user.role, 'member')
+        user = User.query.filter_by(username="testuser").first()
+        self.assertEqual(user.role, "member")
         self.assertFalse(user.is_admin())
         self.assertFalse(user.is_trainer())
 
     def test_admin_role(self):
         """Admin эрхийн туршилт"""
-        admin = User(
-            username='admin',
-            email='admin@fitproof.mn',
-            role='admin'
-        )
-        admin.set_password('admin123')
+        admin = User(username="admin", email="admin@fitproof.mn", role="admin")
+        admin.set_password("admin123")
         db.session.add(admin)
         db.session.commit()
 
@@ -208,12 +182,8 @@ class TestQRSession(unittest.TestCase):
 
     def test_trainer_role(self):
         """Trainer эрхийн туршилт"""
-        trainer = User(
-            username='trainer',
-            email='trainer@fitproof.mn',
-            role='trainer'
-        )
-        trainer.set_password('trainer123')
+        trainer = User(username="trainer", email="trainer@fitproof.mn", role="trainer")
+        trainer.set_password("trainer123")
         db.session.add(trainer)
         db.session.commit()
 
@@ -225,7 +195,7 @@ class TestLeaderboard(unittest.TestCase):
     """Лидерборд туршилтууд"""
 
     def setUp(self):
-        self.app = create_app('testing')
+        self.app = create_app("testing")
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -233,12 +203,8 @@ class TestLeaderboard(unittest.TestCase):
 
         # Олон хэрэглэгч үүсгэх
         for i in range(5):
-            user = User(
-                username=f'user{i}',
-                email=f'user{i}@fitproof.mn',
-                xp_points=i * 100
-            )
-            user.set_password('password')
+            user = User(username=f"user{i}", email=f"user{i}@fitproof.mn", xp_points=i * 100)
+            user.set_password("password")
             db.session.add(user)
         db.session.commit()
 
@@ -249,7 +215,7 @@ class TestLeaderboard(unittest.TestCase):
 
     def test_leaderboard_page(self):
         """Лидерборд хуудас туршилт"""
-        response = self.client.get('/leaderboard')
+        response = self.client.get("/leaderboard")
         self.assertEqual(response.status_code, 200)
 
     def test_leaderboard_order(self):
@@ -259,6 +225,5 @@ class TestLeaderboard(unittest.TestCase):
         self.assertEqual(users[-1].xp_points, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

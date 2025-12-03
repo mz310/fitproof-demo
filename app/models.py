@@ -16,18 +16,19 @@ class User(UserMixin, db.Model):
     Хэрэглэгчийн загвар
     Эрхийн түвшин: member, trainer, admin
     """
-    __tablename__ = 'users'
+
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256))
-    role = db.Column(db.String(20), default='member')  # member, trainer, admin
+    role = db.Column(db.String(20), default="member")  # member, trainer, admin
     xp_points = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Холбоосууд
-    workout_sessions = db.relationship('WorkoutSession', backref='user', lazy='dynamic')
+    workout_sessions = db.relationship("WorkoutSession", backref="user", lazy="dynamic")
 
     def set_password(self, password):
         """Нууц үг хэш болгож хадгалах"""
@@ -42,13 +43,13 @@ class User(UserMixin, db.Model):
         self.xp_points += points
 
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == "admin"
 
     def is_trainer(self):
-        return self.role == 'trainer'
+        return self.role == "trainer"
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f"<User {self.username}>"
 
 
 @login_manager.user_loader
@@ -61,7 +62,8 @@ class Equipment(db.Model):
     Фитнес төхөөрөмжийн загвар
     QR код нь төхөөрөмж бүрт өвөрмөц байна
     """
-    __tablename__ = 'equipment'
+
+    __tablename__ = "equipment"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -72,10 +74,10 @@ class Equipment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Холбоосууд
-    workout_sessions = db.relationship('WorkoutSession', backref='equipment', lazy='dynamic')
+    workout_sessions = db.relationship("WorkoutSession", backref="equipment", lazy="dynamic")
 
     def __repr__(self):
-        return f'<Equipment {self.name}>'
+        return f"<Equipment {self.name}>"
 
 
 class WorkoutSession(db.Model):
@@ -83,11 +85,12 @@ class WorkoutSession(db.Model):
     Дасгалын сессийн загвар
     QR уншуулахад сесс эхэлж, дуусахад бүртгэгдэнэ
     """
-    __tablename__ = 'workout_sessions'
+
+    __tablename__ = "workout_sessions"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    equipment_id = db.Column(db.Integer, db.ForeignKey("equipment.id"), nullable=False)
 
     # Сессийн мэдээлэл
     start_time = db.Column(db.DateTime, default=datetime.utcnow)
@@ -137,5 +140,4 @@ class WorkoutSession(db.Model):
         return 0
 
     def __repr__(self):
-        return f'<WorkoutSession {self.id} - User {self.user_id}>'
-
+        return f"<WorkoutSession {self.id} - User {self.user_id}>"

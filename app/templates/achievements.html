@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Амжилтууд - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .achievements-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .achievements-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .achievements-header p {
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+    }
+
+    .achievements-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .achievement-stat {
+        background: var(--bg-card);
+        padding: 1.5rem 3rem;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        text-align: center;
+    }
+
+    .achievement-stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .achievement-stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title.earned {
+        color: var(--primary);
+    }
+
+    .section-title.available {
+        color: var(--text-secondary);
+    }
+
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .achievement-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .achievement-card.earned {
+        border-color: var(--primary);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.15);
+    }
+
+    .achievement-card.earned::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-1);
+    }
+
+    .achievement-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+    }
+
+    .achievement-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.3));
+    }
+
+    .achievement-card:not(.earned) .achievement-icon {
+        filter: grayscale(100%) opacity(0.5);
+    }
+
+    .achievement-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .achievement-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .achievement-xp {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--primary);
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .achievement-earned-date {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .progress-container {
+        background: var(--bg-elevated);
+        border-radius: 10px;
+        height: 10px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--gradient-1);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .progress-text {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        text-align: right;
+    }
+
+    .no-achievements {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+
+    .no-achievements .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Check button */
+    .check-achievements-btn {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    /* Animation for new achievements */
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    .achievement-card.new-earned {
+        animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="achievements-header">
+    <h1>🏆 Амжилтууд</h1>
+    <p>Дасгал хийж, амжилтуудыг цуглуулаарай!</p>
+</div>
+
+<div class="achievements-stats">
+    <div class="achievement-stat">
+        <div class="achievement-stat-value">{{ earned_achievements|length }}</div>
+        <div class="achievement-stat-label">Авсан амжилт</div>
+    </div>
+    <div class="achievement-stat">
+        <div class="achievement-stat-value">{{ earned_achievements|length + available_achievements|length }}</div>
+        <div class="achievement-stat-label">Нийт амжилт</div>
+    </div>
+    <div class="achievement-stat">
+        <div class="achievement-stat-value">{{ earned_achievements|sum(attribute='xp_reward') }}</div>
+        <div class="achievement-stat-label">Олсон XP</div>
+    </div>
+</div>
+
+<div class="check-achievements-btn">
+    <button class="btn btn-primary" onclick="checkNewAchievements()">
+        🔍 Шинэ амжилт шалгах
+    </button>
+</div>
+
+<!-- Авсан амжилтууд -->
+<h2 class="section-title earned">✅ Авсан амжилтууд</h2>
+{% if earned_achievements %}
+<div class="achievements-grid">
+    {% for achievement in earned_achievements %}
+    <div class="achievement-card earned">
+        <div class="achievement-icon">{{ achievement.icon }}</div>
+        <div class="achievement-name">{{ achievement.name }}</div>
+        <div class="achievement-description">{{ achievement.description }}</div>
+        {% if achievement.xp_reward > 0 %}
+        <div class="achievement-xp">⚡ +{{ achievement.xp_reward }} XP</div>
+        {% endif %}
+        <div class="achievement-earned-date">
+            📅 {{ achievement.earned_at[:10] }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-achievements">
+    <div class="icon">🎯</div>
+    <p>Одоогоор амжилт аваагүй байна. Дасгал хийж эхлээрэй!</p>
+</div>
+{% endif %}
+
+<!-- Боломжит амжилтууд -->
+<h2 class="section-title available">🎯 Боломжит амжилтууд</h2>
+{% if available_achievements %}
+<div class="achievements-grid">
+    {% for achievement in available_achievements %}
+    <div class="achievement-card">
+        <div class="achievement-icon">{{ achievement.icon }}</div>
+        <div class="achievement-name">{{ achievement.name }}</div>
+        <div class="achievement-description">{{ achievement.description }}</div>
+        {% if achievement.xp_reward > 0 %}
+        <div class="achievement-xp">⚡ +{{ achievement.xp_reward }} XP</div>
+        {% endif %}
+        {% if achievement.progress %}
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {{ achievement.progress.percentage }}%"></div>
+        </div>
+        <div class="progress-text">
+            {{ achievement.progress.current }} / {{ achievement.progress.target }} ({{ achievement.progress.percentage }}%)
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-achievements">
+    <div class="icon">🏆</div>
+    <p>Бүх амжилтыг авсан байна. Баяр хүргэе!</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function checkNewAchievements() {
+    try {
+        const response = await fetch('/api/achievements/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.count > 0) {
+            let message = '🎉 Шинэ амжилт авлаа!\n\n';
+            data.new_achievements.forEach(a => {
+                message += `${a.icon} ${a.name}: +${a.xp_reward} XP\n`;
+            });
+            alert(message);
+            location.reload();
+        } else {
+            alert('Одоогоор шинэ амжилт олдсонгүй. Дасгал хийж үргэлжлүүлээрэй! 💪');
+        }
+    } catch (error) {
+        console.error('Error checking achievements:', error);
+        alert('Алдаа гарлаа. Дахин оролдоно уу.');
+    }
+}
+</script>
+{% endblock %}
+

@@ -3,9 +3,10 @@ QR код үүсгэх модуль
 Төхөөрөмж бүрт өвөрмөц QR код үүсгэнэ
 """
 
-import qrcode
-from io import BytesIO
 import base64
+from io import BytesIO
+
+import qrcode
 
 
 def generate_qr_code(data: str, size: int = 200) -> str:
@@ -36,7 +37,7 @@ def generate_qr_code(data: str, size: int = 200) -> str:
 
     # Convert to base64
     buffer = BytesIO()
-    img.save(buffer, format='PNG')
+    img.save(buffer, format="PNG")
     img_str = base64.b64encode(buffer.getvalue()).decode()
 
     return f"data:image/png;base64,{img_str}"
@@ -54,15 +55,14 @@ def generate_equipment_qr(equipment_id: int, equipment_name: str) -> str:
         QR кодын утга (string)
     """
     # Format: EQ{id:03d}-{name_slug}
-    name_slug = equipment_name.upper().replace(' ', '-')[:20]
+    name_slug = equipment_name.upper().replace(" ", "-")[:20]
     return f"EQ{equipment_id:03d}-{name_slug}"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Туршилт
     qr_code = generate_equipment_qr(1, "Treadmill 1")
     print(f"Generated QR code: {qr_code}")
 
     img_data = generate_qr_code(qr_code)
     print(f"Image data length: {len(img_data)}")
-
