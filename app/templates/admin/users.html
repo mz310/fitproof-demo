@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Хэрэглэгчид - Админ{% endblock %}
+
+{% block content %}
+<h1>Хэрэглэгчдийн удирдлага</h1>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Хэрэглэгчийн нэр</th>
+            <th>И-мэйл</th>
+            <th>Эрх</th>
+            <th>Үйлдэл</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <select onchange="changeRole({{ user.id }}, this.value)">
+                    <option value="member" {% if user.role == 'member' %}selected{% endif %}>Member</option>
+                    <option value="trainer" {% if user.role == 'trainer' %}selected{% endif %}>Trainer</option>
+                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+async function changeRole(userId, role) {
+    const response = await fetch(`/admin/user/${userId}/role`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role })
+    });
+    const data = await response.json();
+    if (data.success) {
+        alert(data.message);
+    } else {
+        alert(data.error);
+    }
+}
+</script>
+{% endblock %}

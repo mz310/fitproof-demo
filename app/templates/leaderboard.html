@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Лидерборд - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: var(--text-secondary);
+    }
+
+    .leaderboard-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .leaderboard-item {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .leaderboard-item:hover {
+        border-color: var(--primary);
+    }
+
+    .leaderboard-item.top-1 {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+        border-color: gold;
+    }
+
+    .leaderboard-item.top-2 {
+        background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(169, 169, 169, 0.05));
+        border-color: silver;
+    }
+
+    .leaderboard-item.top-3 {
+        background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(184, 115, 51, 0.05));
+        border-color: #cd7f32;
+    }
+
+    .rank {
+        font-size: 1.5rem;
+        font-weight: 800;
+        width: 50px;
+        text-align: center;
+    }
+
+    .rank-1 { color: gold; }
+    .rank-2 { color: silver; }
+    .rank-3 { color: #cd7f32; }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-info h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .user-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .xp-score {
+        text-align: right;
+    }
+
+    .xp-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .xp-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .current-user {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Лидерборд</h1>
+    <p>Хамгийн их XP цуглуулсан гишүүд</p>
+</div>
+
+<div class="leaderboard-container">
+    {% if users %}
+        {% for user in users %}
+        <div class="leaderboard-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %} {% if current_user.is_authenticated and current_user.id == user.id %}current-user{% endif %}">
+            <div class="rank rank-{{ loop.index if loop.index <= 3 else '' }}">
+                #{{ loop.index }}
+            </div>
+            <div class="user-info">
+                <h3>{{ user.username }}{% if current_user.is_authenticated and current_user.id == user.id %} (Та){% endif %}</h3>
+                <p>{{ user.role | capitalize }}</p>
+            </div>
+            <div class="xp-score">
+                <div class="xp-value">{{ user.xp_points }}</div>
+                <div class="xp-label">XP</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state card">
+            <p>Одоохондоо хэрэглэгч бүртгэгдээгүй байна</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

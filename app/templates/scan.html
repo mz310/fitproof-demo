@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}QR Скан - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scan-container {
+        max-width: 500px;
+        margin: 2rem auto;
+        text-align: center;
+    }
+
+    .scan-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .scan-box {
+        background: var(--bg-card);
+        border: 2px dashed var(--border);
+        border-radius: 20px;
+        padding: 3rem;
+        margin: 2rem 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .scan-box:hover {
+        border-color: var(--primary);
+    }
+
+    .scan-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--bg-elevated);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: var(--text-secondary);
+    }
+
+    .scan-box p {
+        color: var(--text-secondary);
+    }
+
+    #qr-input {
+        display: none;
+    }
+
+    .manual-input {
+        margin-top: 2rem;
+    }
+
+    .manual-input h3 {
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+    }
+
+    #qr-code-input {
+        text-transform: uppercase;
+    }
+
+    .active-session {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid var(--primary);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .active-session h3 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .session-timer {
+        font-size: 3rem;
+        font-weight: 800;
+        font-family: monospace;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 1rem 0;
+    }
+
+    .end-form {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-top: 2rem;
+        text-align: left;
+    }
+
+    .end-form h4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+        .input-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scan-container">
+    <h1 class="scan-title">QR Код Скан</h1>
+    <p style="color: var(--text-secondary);">Төхөөрөмж дээрх QR кодыг уншуулж дасгалаа эхлүүлээрэй</p>
+
+    {% if current_user.is_authenticated %}
+        <div id="active-session-container"></div>
+
+        <div id="scan-section">
+            <div class="scan-box" onclick="document.getElementById('qr-input').click()">
+                <div class="scan-icon">[QR]</div>
+                <p>QR код уншуулахын тулд энд дарна уу</p>
+                <input type="file" id="qr-input" accept="image/*" capture="environment">
+            </div>
+
+            <div class="manual-input">
+                <h3>Эсвэл QR кодыг гараар оруулах:</h3>
+                <div class="form-group">
+                    <input type="text" id="qr-code-input" placeholder="Жишээ: EQ001-TREADMILL">
+                </div>
+                <button class="btn btn-primary" onclick="startSession()">Дасгал эхлүүлэх</button>
+            </div>
+        </div>
+    {% else %}
+        <div class="card" style="margin-top: 2rem;">
+            <p style="margin-bottom: 1rem;">Дасгалаа бүртгэхийн тулд эхлээд нэвтэрнэ үү.</p>
+            <a href="{{ url_for('main.login') }}" class="btn btn-primary">Нэвтрэх</a>
+            <a href="{{ url_for('main.register') }}" class="btn btn-secondary" style="margin-left: 1rem;">Бүртгүүлэх</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let activeSessionId = null;
+let timerInterval = null;
+let startTime = null;
+
+async function checkActiveSession() {
+    try {
+        const response = await fetch('/api/session/active');
+        const data = await response.json();
+        
+        if (data.active) {
+            activeSessionId = data.session_id;
+            startTime = new Date(data.start_time);
+            showActiveSession(data);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function showActiveSession(session) {
+    document.getElementById('scan-section').style.display = 'none';
+    document.getElementById('active-session-container').innerHTML = `
+        <div class="active-session">
+            <h3>Идэвхтэй дасгал</h3>
+            <p><strong>${session.equipment}</strong> (${session.equipment_type})</p>
+            <div class="session-timer" id="timer">00:00:00</div>
+            
+            <div class="end-form">
+                <h4>Дасгалын мэдээлэл оруулах:</h4>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Жин (кг)</label>
+                        <input type="number" id="weight" placeholder="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Сетийн тоо</label>
+                        <input type="number" id="sets" placeholder="3">
+                    </div>
+                    <div class="form-group">
+                        <label>Давталт</label>
+                        <input type="number" id="reps" placeholder="12">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Тэмдэглэл</label>
+                    <textarea id="notes" rows="2" placeholder="Тэмдэглэл..."></textarea>
+                </div>
+                <button class="btn btn-danger" onclick="endSession()">Дасгал дуусгах</button>
+            </div>
+        </div>
+    `;
+    
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+}
+
+function updateTimer() {
+    if (!startTime) return;
+    
+    const now = new Date();
+    const diff = Math.floor((now - startTime) / 1000);
+    
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = diff % 60;
+    
+    document.getElementById('timer').textContent = 
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+async function startSession() {
+    const qrCode = document.getElementById('qr-code-input').value.trim();
+    
+    if (!qrCode) {
+        alert('QR код оруулна уу!');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/session/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qr_code: qrCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            activeSessionId = data.session_id;
+            startTime = new Date(data.start_time);
+            showActiveSession(data);
+        } else {
+            alert(data.error || 'Алдаа гарлаа');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Сүлжээний алдаа');
+    }
+}
+
+async function endSession() {
+    if (!activeSessionId) return;
+    
+    const weight = document.getElementById('weight').value;
+    const sets = document.getElementById('sets').value;
+    const reps = document.getElementById('reps').value;
+    const notes = document.getElementById('notes').value;
+    
+    try {
+        const response = await fetch(`/api/session/${activeSessionId}/end`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                weight: weight ? parseFloat(weight) : null,
+                sets: sets ? parseInt(sets) : null,
+                reps: reps ? parseInt(reps) : null,
+                notes: notes || null
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            clearInterval(timerInterval);
+            alert(`Дасгал дууслаа!\n+${data.xp_earned} XP олсон!\nНийт XP: ${data.total_xp}`);
+            window.location.reload();
+        } else {
+            alert(data.error || 'Алдаа гарлаа');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Сүлжээний алдаа');
+    }
+}
+
+{% if current_user.is_authenticated %}
+checkActiveSession();
+{% endif %}
+</script>
+{% endblock %}

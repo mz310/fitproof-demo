@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .welcome {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .welcome span {
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .recent-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .session-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .session-item {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .session-info h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .session-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .session-stats {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .session-stat {
+        text-align: center;
+    }
+
+    .session-stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .session-stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .active-workout {
+        background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+        border: 1px solid var(--primary);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .active-workout h3 {
+        color: var(--primary);
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state p {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="welcome">Сайн байна уу, <span>{{ current_user.username }}</span>!</h1>
+    <a href="{{ url_for('main.scan') }}" class="btn btn-primary">QR Скан</a>
+</div>
+
+{% if active_session %}
+<div class="active-workout">
+    <h3>Идэвхтэй дасгал</h3>
+    <p>{{ active_session.equipment.name }}</p>
+    <p style="color: var(--text-secondary);">Эхэлсэн: {{ active_session.start_time.strftime('%H:%M') }}</p>
+    <a href="{{ url_for('main.scan') }}" class="btn btn-danger" style="margin-top: 1rem;">Дуусгах</a>
+</div>
+{% endif %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ current_user.xp_points }}</div>
+        <div class="stat-label">XP Оноо</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ recent_sessions | length }}</div>
+        <div class="stat-label">Сүүлийн дасгалууд</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ current_user.role | upper }}</div>
+        <div class="stat-label">Эрхийн түвшин</div>
+    </div>
+</div>
+
+<h2 class="recent-title">Сүүлийн дасгалууд</h2>
+
+{% if recent_sessions %}
+<div class="session-list">
+    {% for session in recent_sessions %}
+    <div class="session-item">
+        <div class="session-info">
+            <h4>{{ session.equipment.name }}</h4>
+            <p>{{ session.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+        <div class="session-stats">
+            {% if session.weight %}
+            <div class="session-stat">
+                <div class="session-stat-value">{{ session.weight }}кг</div>
+                <div class="session-stat-label">Жин</div>
+            </div>
+            {% endif %}
+            {% if session.sets and session.reps %}
+            <div class="session-stat">
+                <div class="session-stat-value">{{ session.sets }}x{{ session.reps }}</div>
+                <div class="session-stat-label">Сет x Давталт</div>
+            </div>
+            {% endif %}
+            {% if session.duration_minutes %}
+            <div class="session-stat">
+                <div class="session-stat-value">{{ session.duration_minutes }}мин</div>
+                <div class="session-stat-label">Хугацаа</div>
+            </div>
+            {% endif %}
+            <div class="session-stat">
+                <div class="session-stat-value">+{{ session.xp_earned }}</div>
+                <div class="session-stat-label">XP</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <p>Одоохондоо дасгал бүртгэгдээгүй байна</p>
+    <a href="{{ url_for('main.scan') }}" class="btn btn-primary">Эхний дасгалаа бүртгэх</a>
+</div>
+{% endif %}
+{% endblock %}

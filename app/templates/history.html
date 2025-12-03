@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Дасгалын түүх - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .history-item {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .history-title h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .history-title p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .history-xp {
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .history-stats {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .history-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .history-stat-value {
+        font-weight: 600;
+    }
+
+    .history-stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .history-notes {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state p {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Дасгалын түүх</h1>
+</div>
+
+{% if sessions %}
+<div class="history-list">
+    {% for session in sessions %}
+    <div class="history-item">
+        <div class="history-header">
+            <div class="history-title">
+                <h3>{{ session.equipment.name }}</h3>
+                <p>{{ session.start_time.strftime('%Y оны %m сарын %d, %H:%M') }}</p>
+            </div>
+            <div class="history-xp">+{{ session.xp_earned }} XP</div>
+        </div>
+        <div class="history-stats">
+            {% if session.weight %}
+            <div class="history-stat">
+                <span class="history-stat-value">{{ session.weight }} кг</span>
+                <span class="history-stat-label">Жин</span>
+            </div>
+            {% endif %}
+            {% if session.sets %}
+            <div class="history-stat">
+                <span class="history-stat-value">{{ session.sets }} сет</span>
+            </div>
+            {% endif %}
+            {% if session.reps %}
+            <div class="history-stat">
+                <span class="history-stat-value">{{ session.reps }} давталт</span>
+            </div>
+            {% endif %}
+            {% if session.duration_minutes %}
+            <div class="history-stat">
+                <span class="history-stat-value">{{ session.duration_minutes }} минут</span>
+            </div>
+            {% endif %}
+            {% if session.get_duration() > 0 %}
+            <div class="history-stat">
+                <span class="history-stat-value">{{ session.get_duration() }} мин</span>
+                <span class="history-stat-label">(нийт)</span>
+            </div>
+            {% endif %}
+        </div>
+        {% if session.notes %}
+        <div class="history-notes">
+            "{{ session.notes }}"
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <p>Одоохондоо дасгал бүртгэгдээгүй байна</p>
+    <a href="{{ url_for('main.scan') }}" class="btn btn-primary">Эхний дасгалаа бүртгэх</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Админ - FitProof{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+        font-size: 2rem;
+    }
+
+    .admin-header p {
+        color: var(--text-secondary);
+    }
+
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .admin-section {
+        margin-bottom: 2rem;
+    }
+
+    .admin-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .admin-table {
+        width: 100%;
+        background: var(--bg-card);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .admin-table th {
+        background: var(--bg-elevated);
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .role-admin {
+        background: rgba(255, 107, 53, 0.2);
+        color: var(--secondary);
+    }
+
+    .role-trainer {
+        background: rgba(0, 204, 255, 0.2);
+        color: #00ccff;
+    }
+
+    .role-member {
+        background: rgba(0, 255, 136, 0.2);
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>Админ Dashboard</h1>
+    <p>Системийн удирдлага</p>
+</div>
+
+<div class="admin-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ users | length }}</div>
+        <div class="stat-label">Нийт хэрэглэгч</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ equipment | length }}</div>
+        <div class="stat-label">Төхөөрөмж</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ users | selectattr('role', 'equalto', 'trainer') | list | length }}</div>
+        <div class="stat-label">Дасгалжуулагч</div>
+    </div>
+</div>
+
+<div class="admin-section">
+    <h2>Хэрэглэгчид</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Хэрэглэгчийн нэр</th>
+                <th>И-мэйл</th>
+                <th>Эрх</th>
+                <th>XP</th>
+                <th>Бүртгүүлсэн</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+                </td>
+                <td>{{ user.xp_points }}</td>
+                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-section">
+    <h2>Төхөөрөмжүүд</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Нэр</th>
+                <th>QR код</th>
+                <th>Төрөл</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eq in equipment %}
+            <tr>
+                <td>{{ eq.id }}</td>
+                <td>{{ eq.name }}</td>
+                <td><code>{{ eq.qr_code }}</code></td>
+                <td>{{ eq.equipment_type or '-' }}</td>
+                <td>{% if eq.is_active %}Идэвхтэй{% else %}Идэвхгүй{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
