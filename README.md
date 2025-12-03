@@ -1,9 +1,9 @@
-# 💪 FitProof - Фитнес дасгалын бүртгэл
+# FitProof - Фитнес дасгалын бүртгэл
 
 > Лабораторийн ажил 5: Эхний User Story хэрэгжүүлэх  
 > F.CSM316 - Програм хангамж хөгжүүлэлтийн процесс
 
-## 📋 Хэрэгжүүлсэн User Story-ууд
+## Хэрэгжүүлсэн User Story-ууд
 
 ### Sprint 1 Backlog (11 Story Point)
 
@@ -13,7 +13,7 @@
 | US2 | Гар оролт: жин, sets×reps, cardio хадгалах | 3 | ✅ |
 | US12 | Админ: хэрэглэгчийн бүртгэл/эрхийн түвшин | 3 | ✅ |
 
-## 🚀 Эхлүүлэх
+## Эхлүүлэх
 
 ### 1. Virtual Environment үүсгэх
 
@@ -46,7 +46,7 @@ python run.py
 | Trainer | trainer | trainer123 |
 | Member | bataa | password123 |
 
-## 🧪 Нэгж туршилт ажиллуулах (TDD)
+## Нэгж туршилт ажиллуулах (TDD)
 
 ```bash
 cd fitproof
@@ -55,7 +55,7 @@ python -m pytest tests/ -v
 python -m unittest tests.test_qr_session -v
 ```
 
-## 📁 Төслийн бүтэц
+## Төслийн бүтэц
 
 ```
 fitproof/
@@ -86,7 +86,7 @@ fitproof/
 └── README.md
 ```
 
-## 🔄 Git Workflow
+## Git Workflow
 
 ### Feature branch үүсгэх
 
@@ -111,7 +111,7 @@ git push origin feature/qr-session-start
 
 GitHub дээр Pull Request үүсгэж, code review хийлгээд main branch руу merge хийнэ.
 
-## 📊 Daily Stand-up жишээ
+## Daily Stand-up жишээ
 
 ### Өчигдөр юу хийсэн бэ?
 - User, Equipment, WorkoutSession model-уудыг бичсэн
@@ -124,7 +124,7 @@ GitHub дээр Pull Request үүсгэж, code review хийлгээд main bra
 ### Саад тотгор?
 - QR camera API ажиллуулахад HTTPS шаардлагатай
 
-## ✅ Definition of Done (DoD)
+## Definition of Done (DoD)
 
 - [x] Код GitHub дээр version control-д оруулсан
 - [x] Unit test-үүд бичигдсэн
@@ -132,7 +132,7 @@ GitHub дээр Pull Request үүсгэж, code review хийлгээд main bra
 - [x] UI энгийн, ойлгомжтой
 - [x] Эрхийн түвшин зөв ажиллаж байгаа
 
-## 📝 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Тайлбар |
 |--------|----------|---------|
